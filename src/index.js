@@ -27,7 +27,10 @@ const params = {
     "./assets/icons8-iron-man-480.png",
     "./assets/icons8-rebel-480.png"
   ],
-  imgIndex: 0
+  imgIndex: 0,
+  cameraPos: { x: 0, y: 0, z: 800 },
+  cameraLookAt: new THREE.Vector3(0, 0, 0),
+  cameraPosTarget: new THREE.Vector3(0, 0, 800),
 }
 
 
@@ -47,7 +50,7 @@ let renderer = createRenderer({ antialias: false }, (_renderer) => {
 
 // Create the camera
 // Pass in fov, near, far and camera position respectively
-let camera = createCamera(75, 1, 3000, { x: 0, y: 0, z: 800 })
+let camera = createCamera(75, 1, 3000, params.cameraPos)
 
 /**************************************************
  * 2. Build your scene in this threejs app
@@ -89,6 +92,14 @@ let app = {
       this.updateGraphic()
     }, false)
 
+    // add mouse move listener to update cameraPosTarget for animating the camera angle movement
+    window.addEventListener('mousemove', (event) => {
+      mouseX = (event.clientX - window.innerWidth / 2);
+      mouseY = (event.clientY - window.innerHeight / 2);
+      params.cameraPosTarget.x = (mouseX * -1) / 2;
+      params.cameraPosTarget.y = mouseY / 2;
+    }, false);
+
     // Stats - show fps
     this.stats1 = new Stats()
     this.stats1.showPanel(0) // Panel 0 = fps
@@ -108,8 +119,9 @@ let app = {
       this.particles[i].position.lerp(this.particles[i].targetPosition, 0.2)
     }
 
-    // camera.position.lerp(cameraTarget, 0.2)
-    // camera.lookAt(cameraLookAt)
+    camera.position.lerp(params.cameraPosTarget, 0.2)
+    // crucial to set lookAt to stabilise the camera movement
+    camera.lookAt(params.cameraLookAt)
   },
   updateGraphic() {
     const img = this.graphics[this.currentGraphic % this.graphics.length]
